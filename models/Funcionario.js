@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const sequelize = require('../config/database.js');
 const Cargo = require('./Cargo.js'); // Importa o modelo de Cargo para criar a associação
 

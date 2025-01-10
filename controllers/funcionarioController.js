@@ -1,6 +1,6 @@
 const Funcionario = require('../models/Funcionario.js');
 const Cargo = require('../models/Cargo.js'); // Importa o modelo de Cargo
-const bcrypt = require('bcrypt'); // Para hash de senhas
+const bcrypt = require('bcryptjs'); // Para hash de senhas
 
 // Buscar todos os funcionários com o cargo relacionado
 const getFuncionarios = async (req, res) => {
