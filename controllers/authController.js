@@ -1,0 +1,35 @@
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const Funcionario = require('../models/Funcionario.js');
+
+const login = async (req, res) => {
+  const { username, senha } = req.body;
+
+  try {
+    const funcionario = await Funcionario.findOne({ where: { usuario: username } });
+
+    if (!funcionario) {
+      return res.status(401).json({ success: false, message: 'Usuário não encontrado.' });
+    }
+
+    const senhaValida = await bcrypt.compare(senha, funcionario.senha);
+
+    if (!senhaValida) {
+      return res.status(401).json({ success: false, message: 'Senha incorreta.' });
+    }
+
+    const token = jwt.sign(
+      { id: funcionario.id, cargo: funcionario.cargo_id }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: '1h' }
+    );
+
+    res.json({ success: true, token });
+  } catch (error) {
+    console.error('Erro ao realizar login:', error);
+    res.status(500).json({ success: false, message: 'Erro ao realizar login.' });
+  }
+};
+
+// Exportando a função de login
+module.exports = { login };
