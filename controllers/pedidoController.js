@@ -1,6 +1,6 @@
 const Pedido = require('../models/Pedido.js');
 const PedidoProduto = require('../models/PedidoProduto.js');
-const Produto = require('../models/ProdutoModels.js'); // Certifique-se de importar o modelo de Produto
+const Produto = require('../models/ProdutoModels.js');
 
 // Função para criar um pedido
 const createPedido = async (req, res) => {
@@ -13,7 +13,10 @@ const createPedido = async (req, res) => {
     }
 
     // Define um valor padrão para `valor_por_kg` caso ele não seja enviado
-    const valorPorKg = valor_por_kg ?? produtos.reduce((sum, prod) => sum + prod.quantidade, 0);
+    const valorPorKg = 
+      valor_por_kg && !isNaN(valor_por_kg) && valor_por_kg > 0 
+        ? valor_por_kg 
+        : 1; // Define o padrão como 1
 
     // Cria o pedido
     const pedido = await Pedido.create({
@@ -62,7 +65,7 @@ const createPedido = async (req, res) => {
     res.status(201).json({ message: 'Pedido criado com sucesso!', pedido });
   } catch (error) {
     console.error('Erro ao criar pedido:', error);
-    res.status(500).json({ error: 'Erro ao criar pedido.' });
+    res.status(500).json({ error: 'Erro ao criar pedido.', details: error.message });
   }
 };
 
