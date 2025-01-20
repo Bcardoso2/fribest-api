@@ -8,27 +8,25 @@ const createPedido = async (req, res) => {
 
   try {
     // Validações básicas
-    if (!cliente_id || !funcionario_id || !produtos || produtos.length === 0) {
+    if (!cliente_id || !funcionario_id || !produtos || produtos.length === 0 || !valor_por_kg) {
       return res.status(400).json({ error: 'Dados inválidos ou incompletos.' });
     }
 
-    // Define um valor padrão para `valor_por_kg` caso ele não seja enviado
-    const valorPorKg = 
-      valor_por_kg && !isNaN(valor_por_kg) && valor_por_kg > 0 
-        ? valor_por_kg 
-        : 1; // Define o padrão como 1
+    if (isNaN(valor_por_kg) || valor_por_kg <= 0) {
+      return res.status(400).json({ error: 'O valor por kg deve ser um número positivo.' });
+    }
 
     // Cria o pedido
     const pedido = await Pedido.create({
       cliente_id,
       funcionario_id,
+      valor_por_kg, // Inclui o valor por kg
+      observacao, // Inclui a observação
       data_pedido: new Date(),
-      valor_por_kg: valorPorKg,
-      observacao: observacao || '', // Garante que observação não seja nula
     });
 
     // Adiciona os produtos ao pedido
-    if (produtos.length > 0) {
+    if (produtos && produtos.length > 0) {
       const produtosInseridos = [];
 
       for (const produto of produtos) {
@@ -41,13 +39,7 @@ const createPedido = async (req, res) => {
             .json({ error: `Produto com ID ${produto.produto_id} não encontrado.` });
         }
 
-        if (produtoDb.estoque < produto.quantidade) {
-          return res
-            .status(400)
-            .json({ error: `Estoque insuficiente para o produto ${produtoDb.nome}.` });
-        }
-
-        // Decrementa o estoque do produto
+        // Remove a verificação de estoque para permitir valores negativos
         produtoDb.estoque -= produto.quantidade;
         await produtoDb.save();
 
@@ -65,7 +57,7 @@ const createPedido = async (req, res) => {
     res.status(201).json({ message: 'Pedido criado com sucesso!', pedido });
   } catch (error) {
     console.error('Erro ao criar pedido:', error);
-    res.status(500).json({ error: 'Erro ao criar pedido.', details: error.message });
+    res.status(500).json({ error: 'Erro ao criar pedido.' });
   }
 };
 
